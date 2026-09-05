@@ -8,8 +8,8 @@
 /* ← إعدادات المشروع.
    هاتان القيمتان علنيتان بالتصميم: مفتاح anon لا يمنح أي صلاحية
    بذاته، سياسات RLS في قاعدة البيانات هي التي تقرر من يكتب. */
-const SUPABASE_URL      = "https://YOUR-PROJECT.supabase.co";
-const SUPABASE_ANON_KEY = "PASTE_YOUR_ANON_PUBLIC_KEY";
+const SUPABASE_URL      = "https://ouypcpcunbvnbmsqdwzr.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_hGXqa0IFn5qdYt6AiQpGSg_vBk3dL8y";
 
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
