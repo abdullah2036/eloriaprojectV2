@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>استيراد بيانات إيلوريا</title>
+<style>
+  body{font-family:system-ui,Tahoma,Arial;background:#FFF9F5;color:#5b4f63;
+       max-width:720px;margin:0 auto;padding:2rem 1.2rem;line-height:1.9}
+  h1{color:#6E597D;font-size:1.4rem}
+  .box{background:#fff;border:1.5px solid #EEDCF6;border-radius:16px;padding:1.2rem;margin:1rem 0}
+  input,button{font:inherit;padding:.6rem .9rem;border-radius:10px;border:1.5px solid #EEDCF6;width:100%;box-sizing:border-box;margin:.3rem 0}
+  button{background:#6E597D;color:#fff;border:none;cursor:pointer}
+  button:disabled{opacity:.5;cursor:default}
+  pre{background:#FFF9F5;border:1px solid #EEDCF6;border-radius:10px;padding:.8rem;
+      white-space:pre-wrap;max-height:340px;overflow:auto;font-size:.85rem;direction:ltr;text-align:left}
+  .muted{color:#A98FAF;font-size:.9rem}
+</style>
+</head>
+<body>
+
+<h1>استيراد data.json إلى قاعدة البيانات</h1>
+<p class="muted">
+  هذه الصفحة تُشغَّل من جهازك فقط ولا تُرفع مع الموقع. يمكن تشغيلها أكثر من مرة:
+  الموجود يُحدَّث، والجديد يُضاف، ولا شيء يُحذف. شغّليها مرة أخيرة يوم التحويل
+  لالتقاط ما نُشر أثناء العمل.
+</p>
+
+<div class="box">
+  <label>البريد وكلمة السر (نفس حساب المؤلفة)</label>
+  <input id="email" type="email" placeholder="you@example.com">
+  <input id="pass"  type="password" placeholder="كلمة السر">
+  <label>ملف data.json</label>
+  <input id="file" type="file" accept=".json">
+  <button id="go">ابدأ الاستيراد</button>
+</div>
+
+<pre id="log">في انتظار الملف...</pre>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* ← نفس القيم الموجودة في app.js */
+const SUPABASE_URL      = "https://YOUR-PROJECT.supabase.co";
+const SUPABASE_ANON_KEY = "PASTE_YOUR_ANON_PUBLIC_KEY";
+
+const sb  = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const log = m => { document.getElementById("log").textContent += "\n" + m; };
+
+document.getElementById("go").onclick = async () => {
+  const btn = document.getElementById("go");
+  const f = document.getElementById("file").files[0];
+  if (!f) return alert("اختاري ملف data.json");
+  btn.disabled = true;
+  document.getElementById("log").textContent = "بدء العملية...";
+
+  try {
+    // 1. الدخول (الاستيراد كتابة، فيتطلب حساب مدير)
+    const { error: authErr } = await sb.auth.signInWithPassword({
+      email: document.getElementById("email").value.trim(),
+      password: document.getElementById("pass").value
+    });
+    if (authErr) throw new Error("فشل الدخول: " + authErr.message);
+
+    const { data: { session } } = await sb.auth.getSession();
+    const { data: adm } = await sb.from("admins").select("user_id")
+                                  .eq("user_id", session.user.id).maybeSingle();
+    if (!adm) throw new Error("هذا الحساب ليس في جدول admins — راجعي الخطوة الأخيرة في schema.sql");
+    log("✓ الدخول ناجح، والحساب مدير");
+
+    const DB = JSON.parse(await f.text());
+    log(`✓ الملف يحتوي ${DB.novels?.length || 0} رواية و ${(DB.quotes||[]).length} اقتباس`);
+
+    // 2. الأغلفة وصور الشخصيات: من base64 إلى ملفات في Storage
+    const upload = async (dataUrl, path) => {
+      if (!dataUrl) return "";
+      if (dataUrl.indexOf("data:") !== 0) return dataUrl;      // رابط جاهز
+      const blob = await (await fetch(dataUrl)).blob();
+      const { error } = await sb.storage.from("covers")
+        .upload(path, blob, { upsert: true, contentType: blob.type || "image/jpeg" });
+      if (error) throw error;
+      return sb.storage.from("covers").getPublicUrl(path).data.publicUrl;
+    };
+
+    const novels = DB.novels || [];
+    for (let i = 0; i < novels.length; i++){
+      const n = novels[i];
+      n.cover = await upload(n.cover, `novels/${n.id}.jpg`);
+      const chars = n.characters || [];
+      for (let j = 0; j < chars.length; j++)
+        chars[j].img = await upload(chars[j].img, `chars/${n.id}-${j}.jpg`);
+      log(`  ↑ صور «${n.title}» رُفعت`);
+    }
+
+    // 3. الروايات
+    if (novels.length){
+      const { error } = await sb.from("novels").upsert(novels.map((n,i) => ({
+        id: n.id, title: n.title, status: n.status || "", tags: n.tags || [],
+        description: n.desc || "", cover: n.cover || "",
+        characters: n.characters || [], position: i
+      })));
+      if (error) throw error;
+      log(`✓ ${novels.length} رواية`);
+    }
+
+    // 4. الفصول
+    const chapters = [];
+    novels.forEach(n => (n.chapters || []).forEach((c,i) => chapters.push({
+      id: c.id, novel_id: n.id, title: c.title, text: c.text || "", position: i
+    })));
+    for (let i = 0; i < chapters.length; i += 50){          // دفعات صغيرة للأمان
+      const { error } = await sb.from("chapters").upsert(chapters.slice(i, i+50));
+      if (error) throw error;
+    }
+    log(`✓ ${chapters.length} فصل`);
+
+    // 5. الاقتباسات (لم تكن لها معرّفات، ننشئها الآن بثبات)
+    const quotes = (DB.quotes || []).map((q,i) => ({
+      id: q.id || ("q" + i), text: q.text, source: q.source || "", position: i
+    }));
+    if (quotes.length){
+      const { error } = await sb.from("quotes").upsert(quotes);
+      if (error) throw error;
+      log(`✓ ${quotes.length} اقتباس`);
+    }
+
+    // 6. نبذة الكاتبة
+    await sb.from("site").upsert({ key: "about", value: { text: DB.about || "" } });
+    log("✓ نبذة الكاتبة");
+
+    log("\n🎉 تم الاستيراد بالكامل. افتحي الموقع وتأكدي أن كل شيء ظاهر.");
+  } catch(e){
+    log("\n✗ توقف: " + (e.message || e));
+  }
+  btn.disabled = false;
+};
+</script>
+</body>
+</html>
