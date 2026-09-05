@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Eloria Story — حكايات تُكتب لتبقى</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Cairo:wght@400;600;700&family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>.author-only{display:none !important}</style><!-- قاعدة أمان: أزرار التحرير مخفية دائمًا عن الزوار حتى لو تعطل ملف التصميم -->
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+
+<header>
+  <div class="header-in">
+    <a href="#/" class="logo">
+      <span class="en">ELORIA<span> STORY</span></span>
+      <span class="ar">حكايات تُكتب لتبقى</span>
+    </a>
+    <nav id="nav">
+      <a href="#/" data-route="home">الرئيسية</a>
+      <a href="#/library" data-route="library">المكتبة</a>
+      <a href="#/quotes" data-route="quotes">الاقتباسات</a>
+      <a href="#/about" data-route="about">عن الكاتبة</a>
+    </nav>
+    <div style="display:flex; align-items:center; gap:.4rem">
+      <span class="author-badge">✒ وضع المؤلفة</span>
+      <button id="authorKey" title="دخول المؤلفة">🗝</button>
+    </div>
+  </div>
+</header>
+
+<main>
+
+<!-- ================= الرئيسية ================= -->
+<section class="view" id="view-home">
+  <div class="hero">
+    <span class="feather">🪶</span>
+    <h1>حكايات تُكتب لتبقى؟</h1>
+    <p>مرحبًا بك في مكتبتي الرقمية، حيث تجد عوالمي وشخصياتي ومكاناتي.<br>افتحي غلافًا، وأشعلي شمعة، ودعي الحكاية تبدأ.</p>
+    <p class="en-sub">A place where stories become worlds.</p>
+    <div class="actions">
+      <a class="btn btn-primary" href="#/library">استكشف المكتبة</a>
+      <a class="btn btn-secondary" href="#/quotes">اقتباسات مضيئة</a>
+    </div>
+  </div>
+
+  <div class="section-title"><span class="orn">✦</span><h2>أحدث الروايات</h2><div class="line"></div>
+    <button class="btn btn-primary btn-sm author-only" onclick="openNovelDialog()">＋ رواية جديدة</button>
+    <a href="#/library" class="muted" style="font-size:.85rem">عرض الكل</a></div>
+  <div class="grid" id="latestGrid"></div>
+
+  <!-- ===== الاشتراك في التنبيهات ===== -->
+  <div class="section-title"><span class="orn">✉</span><h2>تنبيهات الفصول الجديدة</h2><div class="line"></div></div>
+
+  <div class="subscribe-card">
+    <p class="sub-lead">اترك بريدك ويصلك إشعار عند نشر كل فصل جديد أو رواية جديدة.<br>لا رسائل أخرى، ويمكنك إلغاء الاشتراك متى شئت.</p>
+    <div class="sub-row">
+      <input id="subName"  type="text"  placeholder="اسمك (اختياري)" aria-label="اسمك">
+      <input id="subEmail" type="email" inputmode="email" autocomplete="email" placeholder="بريدك الإلكتروني" aria-label="بريدك الإلكتروني">
+      <button class="btn btn-primary" id="subBtn" type="button" onclick="subscribeVisitor()">اشترك ✦</button>
+    </div>
+    <div class="sub-msg" id="subMsg" hidden></div>
+    <p class="sub-fine">لن يُستخدم بريدك إلا لإشعارات الفصول الجديدة.</p>
+  </div>
+</section>
+
+<!-- ================= المكتبة ================= -->
+<section class="view" id="view-library">
+  <div class="section-title"><span class="orn">❀</span><h2>المكتبة</h2><div class="line"></div>
+    <button class="btn btn-primary btn-sm author-only" onclick="openNovelDialog()">＋ رواية جديدة</button>
+  </div>
+  <div class="toolbar" id="tagFilter"></div>
+  <div class="grid" id="libraryGrid"></div>
+</section>
+
+<!-- ================= صفحة الرواية ================= -->
+<section class="view" id="view-novel"></section>
+
+<!-- ================= صفحة القراءة ================= -->
+<section class="view" id="view-reader"></section>
+
+<!-- ================= الاقتباسات ================= -->
+<section class="view" id="view-quotes">
+  <div class="section-title"><span class="orn">❝</span><h2>اقتباسات مضيئة</h2><div class="line"></div>
+    <button class="btn btn-primary btn-sm author-only" onclick="openQuoteDialog()">＋ اقتباس</button>
+  </div>
+  <div class="quote-grid" id="quoteGrid"></div>
+</section>
+
+<!-- ================= عن الكاتبة ================= -->
+<section class="view" id="view-about">
+  <div class="section-title"><span class="orn">🪶</span><h2>عن الكاتبة</h2><div class="line"></div>
+    <button class="btn btn-secondary btn-sm author-only" onclick="editAbout()">تعديل</button>
+  </div>
+  <div class="paper"><div class="chapter-text" id="aboutText"></div></div>
+</section>
+
+</main>
+
+<footer>
+  <div class="en">ELORIA STORY</div>
+  <div style="margin-top:.4rem">حكايات تُكتب لتبقى · ✦ · جميع الحقوق محفوظة</div>
+</footer>
+
+<div id="toast"></div>
+
+<!-- ================= نافذة رواية ================= -->
+<dialog id="novelDialog"><div class="dlg-in">
+  <h3 id="novelDlgTitle">رواية جديدة</h3>
+  <div class="form-row">
+    <div><label>عنوان الرواية</label><input id="nvTitle" placeholder="إيلوريا"></div>
+    <div><label>الحالة</label><select id="nvStatus"><option value="مستمرة">مستمرة</option><option value="مكتملة">مكتملة</option><option value="متوقفة مؤقتًا">متوقفة مؤقتًا</option></select></div>
+  </div>
+  <div class="form-row">
+    <div><label>التصنيفات (افصلي بينها بفاصلة)</label><input id="nvTags" placeholder="فانتازيا, غموض, رومانسية"></div>
+    <div><label>غلاف الرواية</label><input type="file" id="nvCover" accept="image/*"></div>
+  </div>
+  <div class="form-row single"><div><label>نبذة عن الرواية</label><textarea id="nvDesc" placeholder="حيث تُفتح الذكريات، ويتغير المصير..."></textarea></div></div>
+  <div class="dlg-actions">
+    <button class="btn btn-primary" onclick="saveNovel()">حفظ الرواية</button>
+    <button class="btn btn-ghost" onclick="novelDialog.close()">إلغاء</button>
+  </div>
+</div></dialog>
+
+<!-- ================= نافذة فصل ================= -->
+<dialog id="chapterDialog"><div class="dlg-in">
+  <h3 id="chDlgTitle">فصل جديد</h3>
+  <div class="form-row single"><div><label>عنوان الفصل</label><input id="chTitle" placeholder="الفصل الأول: همس الماضي"></div></div>
+  <div class="form-row single"><div><label>نص الفصل</label><textarea id="chText" style="min-height:260px" placeholder="اكتبي هنا... أو أفلتي ملف نصي في المربع أدناه"></textarea></div></div>
+  <div class="dropzone" id="chDrop">🪶 أفلتي ملف <b>‎.txt / ‎.md</b> هنا أو اضغطي للاختيار<input type="file" id="chFile" accept=".txt,.md,text/plain" hidden></div>
+  <div class="dlg-actions">
+    <button class="btn btn-primary" onclick="saveChapter()">حفظ الفصل</button>
+    <button class="btn btn-ghost" onclick="chapterDialog.close()">إلغاء</button>
+  </div>
+</div></dialog>
+
+<!-- ================= نافذة إشعار القرّاء ================= -->
+<dialog id="notifyDialog"><div class="dlg-in">
+  <h3>📢 إشعار القرّاء</h3>
+  <p style="color:var(--mauve); line-height:2; font-size:.92rem; margin:.3rem 0 .9rem">
+    اختاري ما تريدين الإخبار عنه. المُعلَّم بـ«جديد» لم يُرسل من قبل.
+  </p>
+  <div id="notifyList" class="notify-list"></div>
+  <div class="form-row single" style="margin-top:.8rem">
+    <div><label>كلمة تُرفق بالرسالة (اختياري)</label>
+      <textarea id="notifyNote" style="min-height:90px" placeholder="مثال: هذا الفصل عزيز عليّ، أتمنى أن يعجبكم 🌸"></textarea></div>
+  </div>
+  <div class="dlg-actions">
+    <button class="btn btn-primary" id="notifySendBtn" onclick="sendNotifyRequest()">إرسال الإشعار ✉</button>
+    <button class="btn btn-secondary" onclick="shareOnWhatsApp()">واتساب 💬</button>
+    <button class="btn btn-ghost" onclick="notifyDialog.close()">إلغاء</button>
+  </div>
+</div></dialog>
+
+<!-- ================= نافذة شخصية ================= -->
+<dialog id="charDialog"><div class="dlg-in">
+  <h3>شخصية جديدة</h3>
+  <div class="form-row">
+    <div><label>اسم الشخصية</label><input id="crName" placeholder="إيلا"></div>
+    <div><label>الدور</label><input id="crRole" placeholder="الشخصية الرئيسية"></div>
+  </div>
+  <div class="form-row single"><div><label>صورة الشخصية (اختياري)</label><input type="file" id="crImg" accept="image/*"></div></div>
+  <div class="dlg-actions">
+    <button class="btn btn-primary" onclick="saveCharacter()">حفظ الشخصية</button>
+    <button class="btn btn-ghost" onclick="charDialog.close()">إلغاء</button>
+  </div>
+</div></dialog>
+
+<!-- ================= نافذة الدخول ================= -->
+<dialog id="loginDialog"><div class="dlg-in">
+  <h3>🗝 دخول المؤلفة</h3>
+  <p class="muted" style="line-height:1.9; margin-bottom:1rem">
+    حسابك محفوظ في الخادم، لا في هذا الجهاز — تدخلين من أي جهاز بنفس البريد وكلمة السر.
+  </p>
+  <div class="form-row single"><div><label>البريد الإلكتروني</label>
+    <input id="lgEmail" type="email" autocomplete="username" placeholder="you@example.com"></div></div>
+  <div class="form-row single"><div><label>كلمة السر</label>
+    <input id="lgPass" type="password" autocomplete="current-password"
+           onkeydown="if(event.key==='Enter')doLogin()"></div></div>
+  <div class="dlg-actions">
+    <button class="btn btn-primary" id="loginBtn" onclick="doLogin()">دخول</button>
+    <button class="btn btn-ghost" onclick="resetPassword()">نسيت كلمة السر</button>
+    <button class="btn btn-ghost" onclick="loginDialog.close()">إلغاء</button>
+  </div>
+</div></dialog>
+
+<!-- ================= نافذة القرّاء ================= -->
+<dialog id="subsDialog"><div class="dlg-in">
+  <h3>👥 قائمة القرّاء</h3>
+  <p class="muted" style="line-height:1.9; margin-bottom:.8rem">
+    من يسجّل من الموقع يظهر هنا «بانتظار الموافقة». الإشعارات تصل للمفعّلين فقط.
+  </p>
+  <div id="subsList" class="notify-list"></div>
+  <div class="dlg-actions">
+    <button class="btn btn-ghost" onclick="subsDialog.close()">إغلاق</button>
+  </div>
+</div></dialog>
+
+<!-- ================= نافذة اقتباس ================= -->
+<dialog id="quoteDialog"><div class="dlg-in">
+  <h3>اقتباس جديد</h3>
+  <div class="form-row single"><div><label>نص الاقتباس</label><textarea id="qText" placeholder="بعض الحكايات لا تُروى... بل تُعاش."></textarea></div></div>
+  <div class="form-row single"><div><label>المصدر</label><input id="qSource" placeholder="إيلوريا — الفصل الثالث"></div></div>
+  <div class="dlg-actions">
+    <button class="btn btn-primary" onclick="saveQuote()">حفظ الاقتباس</button>
+    <button class="btn btn-ghost" onclick="quoteDialog.close()">إلغاء</button>
+  </div>
+</div></dialog>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="app.js"></script>
+</body>
+</html>
